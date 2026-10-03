@@ -4,11 +4,34 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file: .env
+    env_file: .env.dist
     ports:
       - 8080:8080
+    volumes:
+      - ./alembic:/code/alembic
     depends_on:
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: arkya123
+      POSTGRES_DB: ecommerce
+    ports:
+      - 5433:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
   redis:
     container_name: redis
     image: redis/redis-stack
@@ -16,26 +39,36 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - 6379:6379
+
   celery_worker:
     container_name: celery_worker
     build: .
     command:
-      - celery -A celery_worker.celery worker --loglevel=info
-    volumes:
-      - ecommerce_api/
+      - celery
+      - -A
+      - celery_worker.celery
+      - worker
+      - --loglevel=info
+    env_file: .env.dist
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     depends_on:
       - api
       - redis
+
   flower:
     container_name: flower
     build: .
     command:
-      - celery -A celery_worker celery flower --port=5555
+      - celery
+      - -A
+      - celery_worker.celery
+      - flower
+      - --port=5555
     ports:
       - 5556:5555
+    env_file: .env.dist
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
@@ -43,4 +76,5 @@ services:
       - api
       - redis
       - celery_worker
-
+volumes:
+  pgdata:

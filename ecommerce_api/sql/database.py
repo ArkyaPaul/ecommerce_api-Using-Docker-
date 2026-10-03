@@ -54,9 +54,7 @@ class Database:
         Creates an engine, provides a factory for Session objects and creates
         tables that do not already exists
         """
-        self.engine = create_engine(
-            DATABASE_URL, connect_args={"check_same_thread": False}
-        )
+        self.engine = create_engine(DATABASE_URL)
         session_maker = sessionmaker(
             autocommit=False,
             autoflush=False,

@@ -7,7 +7,9 @@ pydantic[email]
 passlib[argon2]
 python-multipart
 httpx
-celery
+celery[redis]
 pika
 flower
 alembic
+python-jose
+psycopg2-binary

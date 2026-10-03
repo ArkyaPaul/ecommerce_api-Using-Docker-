@@ -35,7 +35,7 @@ Admin related endpoints require admin credentials.
 
 app = FastAPI(
     title="E-commerce API",
-    docs_url="/",
+    docs_url="/docs",
     description=description
 )
 
