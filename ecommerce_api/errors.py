@@ -1,4 +1,4 @@
-from fastapi import status
+from fastapi import status # type: ignore
 
 from ecommerce_api.enums import ErrorTypes
 

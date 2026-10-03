@@ -1,5 +1,5 @@
-from sqlalchemy.orm import relationship
-from sqlalchemy import (
+from sqlalchemy.orm import relationship # type: ignore
+from sqlalchemy import ( # type: ignore
     Column, Integer, String, Text, Float, ForeignKey
 )
 

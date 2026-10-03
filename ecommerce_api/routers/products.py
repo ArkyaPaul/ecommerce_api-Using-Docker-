@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends # type: ignore
 
 from ecommerce_api.schemas import Output, Product, JWTData
 from ecommerce_api.enums import ProductCategory

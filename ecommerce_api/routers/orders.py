@@ -1,4 +1,4 @@
-from fastapi import Request, APIRouter, Depends
+from fastapi import Request, APIRouter, Depends # type: ignore
 
 from ecommerce_api.schemas import Output, JWTData
 from ecommerce_api.dependencies.slack_connection import post_to_slack

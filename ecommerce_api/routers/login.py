@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request, Depends
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Request, Depends # type: ignore
+from fastapi.security import OAuth2PasswordRequestForm # pyright: ignore[reportMissingImports]
 
 from ecommerce_api.schemas import Output, User
 from ecommerce_api.auth.user_pass import verify

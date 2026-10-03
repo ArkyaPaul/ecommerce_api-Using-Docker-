@@ -1,7 +1,7 @@
-from jose import JWTError, jwt
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends
-from functools import wraps
+from jose import JWTError, jwt # type: ignore
+from fastapi.security import OAuth2PasswordBearer # type: ignore
+from fastapi import Depends # type: ignore
+from functools import wraps # type: ignore
 
 from ecommerce_api.schemas import JWTData, User
 from ecommerce_api.enums import UserType

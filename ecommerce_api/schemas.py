@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field # type: ignore
 from typing import Any
 from datetime import datetime
 from uuid import uuid4

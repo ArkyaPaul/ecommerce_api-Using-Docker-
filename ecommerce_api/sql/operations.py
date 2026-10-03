@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session # type: ignore
 from typing import List
 
 from ecommerce_api.sql import models

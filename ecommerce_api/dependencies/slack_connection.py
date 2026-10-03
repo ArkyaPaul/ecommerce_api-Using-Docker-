@@ -1,4 +1,4 @@
-import httpx
+import httpx # type: ignore
 from typing import Any
 
 from ecommerce_api.settings import SLACK_WEBHOOK_URL

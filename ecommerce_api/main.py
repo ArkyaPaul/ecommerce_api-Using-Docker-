@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI # type: ignore
 
 from ecommerce_api.routers.users import router as users_router
 from ecommerce_api.routers.login import router as login_router

@@ -1,6 +1,6 @@
 import os
 from typing import Any
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 from functools import lru_cache
 
 load_dotenv()
