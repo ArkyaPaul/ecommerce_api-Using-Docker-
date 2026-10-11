@@ -1,3 +1,6 @@
+from urllib.request import Request
+from fastapi.responses import JSONResponse # type: ignore
+from ecommerce_api.errors import AppException
 from fastapi import FastAPI # type: ignore
 
 from ecommerce_api.routers.users import router as users_router
@@ -39,6 +42,15 @@ app = FastAPI(
     description=description
 )
 
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    return JSONResponse(
+        status_code=exc.http_status_code,
+        content={
+            "error_type": exc.error_type,
+            "details": exc.details
+        }
+    )
 
 app.include_router(login_router)
 app.include_router(users_router)

@@ -37,6 +37,7 @@ DATABASE_URL = load_variable(
 # JWT
 ALGORITHM = load_variable(name="ALGORITHM")
 JWT_SECRET_KEY = load_variable(name="JWT_SECRET_KEY")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(load_variable(name="ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 # slack
 SLACK_WEBHOOK_URL = load_variable(name="SLACK_WEBHOOK_URL")

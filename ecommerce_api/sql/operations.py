@@ -160,7 +160,7 @@ class OrderOperations:
         if not email:
             return db.query(models.Order).all()
         orders = db.query(models.Order).filter(
-            models.Order.customer_email == email
+            models.Order.user_email == email
         ).all()
         return orders
 

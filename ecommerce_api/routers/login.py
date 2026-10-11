@@ -5,7 +5,7 @@ from ecommerce_api.schemas import Output, User
 from ecommerce_api.auth.user_pass import verify
 from ecommerce_api.errors import Unauthorized, BadRequest
 from ecommerce_api.sql.operations import UserOperations
-from ecommerce_api.auth.access import create_token
+from ecommerce_api.auth.access import create_access_token, create_refresh_token
 
 router = APIRouter(tags=["login"])
 
@@ -42,7 +42,20 @@ async def user_login(
         hashed_password=existing_user.password
     ):
         raise Unauthorized(details="Invalid credentials")
-    token = create_token(user=existing_user)
+    access_token = create_access_token(user=existing_user)
+    refresh_token = create_refresh_token(user=existing_user)
     return Output(
         success=True,
-        results={'access_token': token, 'token_type': 'bearer'})
+        results={'access_token': access_token, 'refresh_token': refresh_token, 'token_type': 'bearer'})
+
+@router.post("/refresh/{refresh_token}")
+async def refresh_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    existing_user = UserOperations.get_by_email(email=form_data.username)
+    if not existing_user:
+        raise Unauthorized(details=(f"User {form_data.username} does not exist. "f"Create an account first."))
+    if not verify(password=form_data.password, hashed_password=existing_user.password):
+        raise Unauthorized(details="Invalid credentials")
+    access_token = create_access_token(user=existing_user)
+    return access_token
+    
+
