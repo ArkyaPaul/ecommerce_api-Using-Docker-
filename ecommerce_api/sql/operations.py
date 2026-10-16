@@ -150,14 +150,14 @@ class OrderOperations:
         """Get order (all items in cart)"""
         order = db.query(models.Order).filter(
             models.Order.id == order_id
-        ).all()
+        ).first()
         return order
 
     @staticmethod
     @database_operation
-    def get_all(db: Session, email: str = None) -> List[models.Order]:
+    def get_all(db: Session, isEmail: bool, email: str = None) -> List[models.Order]:
         """Get all orders from db"""
-        if not email:
+        if not isEmail:
             return db.query(models.Order).all()
         orders = db.query(models.Order).filter(
             models.Order.user_email == email

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field # type: ignore
+from pydantic import ConfigDict, BaseModel, EmailStr, Field # type: ignore
 from typing import Any
 from datetime import datetime
 from uuid import uuid4
@@ -13,6 +13,16 @@ class Output(BaseModel):
     success: bool
     message: str | None = None
     results: Any | None = None
+
+    @property
+    def type(self) -> str:
+        return UserType.ADMIN
+    
+    def dict(self, *args, **kwargs):
+        _dict = super().dict()
+        _dict.update({"type": self.type})
+        return _dict
+    
 
 
 class User(BaseModel):
@@ -68,6 +78,7 @@ class Product(BaseModel):
 
 
 class Order(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     """
     Order schema
     """
@@ -85,8 +96,8 @@ class Order(BaseModel):
         _dict.update({"created_date": self.created_date})
         return _dict
 
-    class Config:
-        orm_true = True
+    # class Config:
+    #     orm_true = True
 
 
 class Login(BaseModel):

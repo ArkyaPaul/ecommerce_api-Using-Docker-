@@ -58,9 +58,6 @@ services:
       - worker
       - --loglevel=info
     env_file: .env.dist
-    environment:
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     depends_on:
       - api
       - redis
@@ -77,9 +74,6 @@ services:
     ports:
       - 5556:5555
     env_file: .env.dist
-    environment:
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     depends_on:
       - api
       - redis

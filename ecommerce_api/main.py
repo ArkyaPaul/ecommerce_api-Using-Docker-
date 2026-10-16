@@ -69,4 +69,5 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    database.dispose_session()
+    if database is not None:
+        database.dispose_session()

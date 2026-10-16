@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from jose import JWTError, jwt # type: ignore
+from jose import ExpiredSignatureError, JWTError, jwt # type: ignore
 from fastapi.security import OAuth2PasswordBearer # type: ignore
 from fastapi import Depends # type: ignore
 from functools import wraps # type: ignore
@@ -28,27 +28,37 @@ def create_access_token(user: User) -> str:
 def create_refresh_token(user: User) -> str:
     jwt_data = JWTData(email=user.email, user_type=user.type)
     payload = jwt_data.model_dump()
-    payload.update({"exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),"type": "refresh",})
+    payload.update({"exp": datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),"type": "refresh",})
     
     refresh_jwt = jwt.encode( claims=payload, key=JWT_SECRET_KEY, algorithm=ALGORITHM)
     return refresh_jwt
 
-def authorize_token(token: str = Depends(oauth2_scheme)) -> JWTData:
-    """
-    Decodes and verifies access token
-    """
+
+def authorize_token(
+    token: str = Depends(oauth2_scheme),
+) -> JWTData:
+    """Decode and validate an access token."""
     try:
         payload = jwt.decode(
             token=token,
             key=JWT_SECRET_KEY,
-            algorithms=ALGORITHM
+            algorithms=[ALGORITHM],
+            options={"verify_exp": True},
         )
-        if not payload:
+
+        if payload.get("type") != "access":
+            raise Unauthorized(details="Invalid access token")
+
+        if not payload.get("email"):
             raise Unauthorized(details="Could not validate credentials")
-        jwt_data = JWTData(**payload)
+
+        return JWTData(**payload)
+
+    except ExpiredSignatureError:
+        raise Unauthorized(details="Access token has expired")
     except JWTError:
         raise Unauthorized(details="Could not validate credentials")
-    return jwt_data
+
 
 
 def admin_access_only(func):
