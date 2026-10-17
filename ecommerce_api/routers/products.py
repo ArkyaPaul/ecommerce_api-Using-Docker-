@@ -4,7 +4,7 @@ from ecommerce_api.schemas import Output, Product, JWTData
 from ecommerce_api.enums import ProductCategory
 from ecommerce_api.errors import NotFound
 from ecommerce_api.sql.operations import ProductOperations
-from ecommerce_api.auth.access import authorize_token, admin_access_only
+from ecommerce_api.auth.access import authorize_admin, authorize_token
 
 router = APIRouter(
     tags=["products"]
@@ -51,11 +51,10 @@ async def get_by_category(
 
 
 @router.post("/products/new", response_model=Output)
-@admin_access_only
 async def create_new_product(
     request: Request,
     product: Product,
-    data: JWTData = Depends(authorize_token)
+    data: JWTData = Depends(authorize_admin)
 ):
     """
     Create new product
@@ -65,12 +64,11 @@ async def create_new_product(
 
 
 @router.put("/products/{product_id}", response_model=Output)
-@admin_access_only
 async def update_product(
     request: Request,
     product_id: str,
     product: Product,
-    data: JWTData = Depends(authorize_token)
+    data: JWTData = Depends(authorize_admin)
 ):
     """
     Update existing product
@@ -83,11 +81,10 @@ async def update_product(
 
 
 @router.delete("/products/{product_id}", response_model=Output)
-@admin_access_only
 async def delete_product(
     request: Request,
     product_id: str,
-    data: JWTData = Depends(authorize_token)
+    data: JWTData = Depends(authorize_admin)
 ):
     """
     Delete product by product id (primary key)

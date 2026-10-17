@@ -3,7 +3,7 @@ from fastapi import Request, APIRouter, Depends # type: ignore
 from ecommerce_api.schemas import Order, Output, JWTData
 from ecommerce_api.dependencies.slack_connection import post_to_slack
 from ecommerce_api.sql.operations import OrderOperations, ProductOperations
-from ecommerce_api.auth.access import authorize_token, admin_access_only
+from ecommerce_api.auth.access import authorize_admin, authorize_token
 from ecommerce_api.errors import NotFound
 
 router = APIRouter(tags=["orders"])
@@ -30,8 +30,7 @@ async def add_item(
     return Output(success=True, message="Item added to cart")
 
 @router.get("/order/all", response_model=Output)
-@admin_access_only
-async def getAll(request: Request, data: JWTData = Depends(authorize_token)):
+async def getAll(request: Request, data: JWTData = Depends(authorize_admin)):
     """
     Get all orders
     """
@@ -46,11 +45,10 @@ async def getAll(request: Request, data: JWTData = Depends(authorize_token)):
     return Output(success=True, results=results)
 
 @router.get("/order/{order_id}", response_model=Output)
-@admin_access_only
 async def get(
         request: Request,
         order_id: str, data:
-        JWTData = Depends(authorize_token)
+        JWTData = Depends(authorize_admin)
 ):
     """
     Get order from order_id
@@ -116,8 +114,9 @@ async def submit_order(
     """
     Submit new order
     """
-    order = OrderOperations.submit(email=data.email)
-    await post_to_slack(order=order)
+    order_id = OrderOperations.get_order_id_from_email(email=data.email)
+    order = OrderOperations.submit(order_id=order_id)
+    # await post_to_slack(order=order)
     return Output(success=True, results=order)
 
 

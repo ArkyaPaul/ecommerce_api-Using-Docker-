@@ -194,6 +194,9 @@ class OrderOperations:
         if not order.products:
             raise NotFound(details="No items in cart")
 
+        if order.status == OrderStatus.SUBMITTED:
+            raise NotFound(details="Already Submitted")
+
         order.status = OrderStatus.SUBMITTED
         db.add(order)
         db.commit()
@@ -203,14 +206,21 @@ class OrderOperations:
     @database_operation
     def cancel(db: Session, order_id: str) -> None:
         """Cancel (delete) order from db"""
-        order = db.query(models.Order).filter(
-            models.Order.id == order_id
-        ).first()
-        for product_id in order.products:
-            product = db.query(models.Product).get(product_id).first()
-            product.update({"quantity": product.quantity + 1})
+        order = db.query(models.Order).filter(models.Order.id == order_id).first()
+        products = (db.query(models.Product).join(models.Order,models.Product.order_id == models.Order.id).filter(models.Order.id == order_id).all())
 
-        order.delete()
+        for product in products:
+            product.quantity += 1
+            product.order_id = None
+        
+        db.delete(order)
         db.commit()
 
+    @staticmethod
+    @database_operation
+    def get_order_id_from_email(db: Session, email: str):
+        id = db.query(models.Order).filter(models.Order.user_email == email).first().id
+        if not id:
+            raise NotFound(details="Invalid Details!!")
+        return id
 

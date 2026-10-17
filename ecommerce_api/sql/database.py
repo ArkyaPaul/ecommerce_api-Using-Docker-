@@ -31,12 +31,12 @@ def database_operation(func):
         # open_connection = database.session()
         try:
             # return func(db=open_connection, *args, **kwargs)
-            return func(db=database.session, *args, **kwargs)
+            return func(*args, db=database.session, **kwargs)
         except Exception as e:
             print(e)
             # open_connection.rollback()
             database.session.rollback()
-            raise
+            raise   
         # finally:
         #     open_connection.close()
     return _database_operation

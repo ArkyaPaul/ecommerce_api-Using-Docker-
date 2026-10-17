@@ -7,7 +7,7 @@ from functools import wraps # type: ignore
 
 from ecommerce_api.schemas import JWTData, User
 from ecommerce_api.enums import UserType
-from ecommerce_api.errors import Unauthorized
+from ecommerce_api.errors import Forbidden, Unauthorized
 from ecommerce_api.settings import ACCESS_TOKEN_EXPIRE_MINUTES, JWT_SECRET_KEY, ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -36,6 +36,7 @@ def create_refresh_token(user: User) -> str:
 
 def authorize_token(
     token: str = Depends(oauth2_scheme),
+    adminAccess: bool = False
 ) -> JWTData:
     """Decode and validate an access token."""
     try:
@@ -52,6 +53,9 @@ def authorize_token(
         if not payload.get("email"):
             raise Unauthorized(details="Could not validate credentials")
 
+        if adminAccess and payload.get("user_type") != 'admin':
+            raise Forbidden()
+
         return JWTData(**payload)
 
     except ExpiredSignatureError:
@@ -59,14 +63,7 @@ def authorize_token(
     except JWTError:
         raise Unauthorized(details="Could not validate credentials")
 
-
-
-def admin_access_only(func):
-    @wraps(func)
-    async def _admin_access_only(*args, **kwargs):
-        user_type = kwargs["data"].user_type
-        if user_type == UserType.ADMIN:
-            return await func(*args, **kwargs)
-        raise Unauthorized(details="No access")
-    return _admin_access_only
-
+def authorize_admin(
+    token: str = Depends(oauth2_scheme),
+) -> JWTData:
+    return authorize_token(token=token, adminAccess=True)
