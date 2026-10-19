@@ -11,7 +11,7 @@ from ecommerce_api.errors import Forbidden, Unauthorized
 from ecommerce_api.settings import ACCESS_TOKEN_EXPIRE_MINUTES, JWT_SECRET_KEY, ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+REFRESH_TOKEN_EXPIRE_DAYS = 1
 
 
 def create_access_token(user: User) -> str:

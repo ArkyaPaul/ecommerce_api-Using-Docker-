@@ -1,10 +1,12 @@
+from operator import and_
+
 from sqlalchemy.orm import Session # type: ignore
 from typing import List
 
 from ecommerce_api.sql import models
 from ecommerce_api.schemas import User, Product, Order
 from ecommerce_api.sql.database import database_operation
-from ecommerce_api.errors import NotFound, BadRequest
+from ecommerce_api.errors import NotFound, BadRequest, Unauthorized
 from ecommerce_api.enums import OrderStatus
 from ecommerce_api.auth.user_pass import to_hash
 
@@ -178,9 +180,8 @@ class OrderOperations:
             models.Product.id == product_id
         ).first()
         product.quantity += 1
-        active_order.total_price -= product.price
-        active_order.products.remove(product)
         product.order_id = None
+        db.delete(active_order)
         db.commit()
 
     @staticmethod
@@ -204,9 +205,14 @@ class OrderOperations:
 
     @staticmethod
     @database_operation
-    def cancel(db: Session, order_id: str) -> None:
+    def cancel(db: Session, order_id: str, email:str) -> None:
         """Cancel (delete) order from db"""
         order = db.query(models.Order).filter(models.Order.id == order_id).first()
+        if not order:
+            raise NotFound(details="No such order exists!!")
+        if order.user_email != email:
+            raise Unauthorized(details="You are not authorized to cancel this order")
+        
         products = (db.query(models.Product).join(models.Order,models.Product.order_id == models.Order.id).filter(models.Order.id == order_id).all())
 
         for product in products:
@@ -216,11 +222,14 @@ class OrderOperations:
         db.delete(order)
         db.commit()
 
+
     @staticmethod
     @database_operation
     def get_order_id_from_email(db: Session, email: str):
-        id = db.query(models.Order).filter(models.Order.user_email == email).first().id
-        if not id:
-            raise NotFound(details="Invalid Details!!")
-        return id
+        order = db.query(models.Order).filter(models.Order.user_email == email,models.Order.status == OrderStatus.IN_PROGRESS).first()
+        if not order:
+            print("email:", repr(email), "status wanted:", repr(OrderStatus.IN_PROGRESS), flush=True)
+            raise NotFound(details="No in-progress order found")
+        return order.id
+
 

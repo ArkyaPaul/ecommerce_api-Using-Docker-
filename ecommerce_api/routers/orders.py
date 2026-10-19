@@ -4,7 +4,7 @@ from ecommerce_api.schemas import Order, Output, JWTData
 from ecommerce_api.dependencies.slack_connection import post_to_slack
 from ecommerce_api.sql.operations import OrderOperations, ProductOperations
 from ecommerce_api.auth.access import authorize_admin, authorize_token
-from ecommerce_api.errors import NotFound
+from ecommerce_api.errors import NotFound, Unauthorized
 
 router = APIRouter(tags=["orders"])
 
@@ -72,6 +72,8 @@ async def get_all_items(
     """
     Returns all items in user's shopping cart
     """
+    if data.user_type=='customer' and data.email!=email:
+        raise Unauthorized(details="You are not authorized to view this order")
     items = OrderOperations.get_all(isEmail=True, email=email)
     serialized_items = [
         Order.model_validate(item).model_dump()
@@ -102,7 +104,7 @@ async def cancel_order(
     """
     Cancel order
     """
-    OrderOperations.cancel(order_id=order_id)
+    OrderOperations.cancel(order_id=order_id, email=data.email)
     return Output(success=True, message="Order cancelled")
 
 
@@ -116,8 +118,12 @@ async def submit_order(
     """
     order_id = OrderOperations.get_order_id_from_email(email=data.email)
     order = OrderOperations.submit(order_id=order_id)
-    # await post_to_slack(order=order)
-    return Output(success=True, results=order)
+    await post_to_slack(order=order)
+    order_data = {
+        column.name: getattr(order, column.name)
+        for column in order.__table__.columns
+    }
+    return Output(success=True, results=order_data)
 
 
 

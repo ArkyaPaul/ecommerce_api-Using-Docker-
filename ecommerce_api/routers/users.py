@@ -35,7 +35,11 @@ async def get_user(
     user = UserOperations.get_by_email(email=email)
     if not user:
         raise NotFound(details="User not found")
-    return Output(success=True, results=user)
+    user_data = {
+        column.name: getattr(user, column.name)
+        for column in user.__table__.columns
+    }
+    return Output(success=True, results=user_data)
 
 
 @router.delete("/users/{email}", response_model=Output)

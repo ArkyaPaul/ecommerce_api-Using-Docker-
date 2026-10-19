@@ -20,7 +20,16 @@ async def get_all(
     Get a list of all products
     """
     products = ProductOperations.get_all()
-    return Output(success=True, results=products)
+    if not products:
+        raise NotFound(details="No products found")
+    all_products = [
+        {
+            column.name: getattr(product, column.name)
+            for column in product.__table__.columns
+        }
+        for product in products
+    ]
+    return Output(success=True, results=all_products)
 
 
 @router.get("/products/{product_id}", response_model=Output)
@@ -32,10 +41,14 @@ async def get_by_id(
     """
      Return a product by a primary key
     """
-    product = ProductOperations.get_by_id(product_id=product_id)
-    if not product:
+    products = ProductOperations.get_by_id(product_id=product_id)
+    if not products:
         raise NotFound(details=f"Product with ID {product_id} not found")
-    return Output(success=True, results=product)
+    specific_product = {
+        column.name: getattr(products, column.name)
+        for column in products.__table__.columns
+    }
+    return Output(success=True, results=specific_product)
 
 
 @router.get("/products/category/{category}", response_model=Output)
@@ -46,7 +59,16 @@ async def get_by_category(
     """
     Get all products by category
     """
-    matching_products = ProductOperations.get_by_category(category=category)
+    products = ProductOperations.get_by_category(category=category)
+    if not products:
+        raise NotFound(details="No products found in this category")
+    matching_products = [
+        {
+            column.name: getattr(product, column.name)
+            for column in product.__table__.columns
+        }
+        for product in products
+    ]
     return Output(success=True, results=matching_products)
 
 
