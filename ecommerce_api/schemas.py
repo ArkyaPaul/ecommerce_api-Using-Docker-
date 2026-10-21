@@ -3,7 +3,7 @@ from typing import Any
 from datetime import datetime
 from uuid import uuid4
 
-from ecommerce_api.enums import ProductCategory, UserType, OrderStatus
+from ecommerce_api.enums import PaymentStatus, PaymentType, ProductCategory, UserType, OrderStatus
 
 
 class Output(BaseModel):
@@ -86,6 +86,8 @@ class Order(BaseModel):
     total_price: float = 0.0
     status: OrderStatus = OrderStatus.IN_PROGRESS
     user_email: str
+    payment_type: str = PaymentType.TBD
+    payment_status: str = PaymentStatus.NOT_INITIATED
 
     @property
     def created_date(self) -> datetime:

@@ -7,7 +7,7 @@ from ecommerce_api.sql import models
 from ecommerce_api.schemas import User, Product, Order
 from ecommerce_api.sql.database import database_operation
 from ecommerce_api.errors import NotFound, BadRequest, Unauthorized
-from ecommerce_api.enums import OrderStatus
+from ecommerce_api.enums import OrderStatus, PaymentStatus, PaymentType
 from ecommerce_api.auth.user_pass import to_hash
 
 
@@ -186,7 +186,7 @@ class OrderOperations:
 
     @staticmethod
     @database_operation
-    def submit(db: Session, order_id: str) -> models.Order:
+    def submit(db: Session, order_id: str, payment_type: str) -> models.Order:
         """Submit an order (finalize cart)"""
         order = db.query(models.Order).filter(
             models.Order.id == order_id
@@ -198,6 +198,9 @@ class OrderOperations:
         if order.status == OrderStatus.SUBMITTED:
             raise NotFound(details="Already Submitted")
 
+        order.payment_type = payment_type
+        order.payment_status = (PaymentStatus.PENDING if payment_type == PaymentType.COD else PaymentStatus.SUCCESS)
+        
         order.status = OrderStatus.SUBMITTED
         db.add(order)
         db.commit()
@@ -210,6 +213,8 @@ class OrderOperations:
         order = db.query(models.Order).filter(models.Order.id == order_id).first()
         if not order:
             raise NotFound(details="No such order exists!!")
+        if order.status == OrderStatus.IN_PROGRESS:
+            raise BadRequest()
         if order.user_email != email:
             raise Unauthorized(details="You are not authorized to cancel this order")
         
@@ -218,8 +223,9 @@ class OrderOperations:
         for product in products:
             product.quantity += 1
             product.order_id = None
-        
-        db.delete(order)
+
+        order.status = OrderStatus.CANCELLED
+        order.payment_status = (PaymentStatus.NONE if order.payment_type == PaymentType.COD else PaymentStatus.REFUNDED)
         db.commit()
 
 

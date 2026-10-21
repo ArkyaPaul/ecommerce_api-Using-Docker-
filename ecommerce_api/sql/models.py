@@ -44,5 +44,7 @@ class Order(Base):
     total_price = Column(Float)
     status = Column(String)
     user_email = Column(String, ForeignKey("user.email", ondelete="CASCADE"))
+    payment_type = Column(String, nullable=False, default="cod")
+    payment_status = Column( String, nullable=False, default="pending")
     products = relationship("Product", backref="order", lazy='subquery')
 

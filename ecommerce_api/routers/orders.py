@@ -111,14 +111,15 @@ async def cancel_order(
 @router.post("/order/submit", response_model=Output)
 async def submit_order(
     request: Request,
+    payment_type: str,
     data: JWTData = Depends(authorize_token)
 ):
     """
     Submit new order
     """
     order_id = OrderOperations.get_order_id_from_email(email=data.email)
-    order = OrderOperations.submit(order_id=order_id)
-    await post_to_slack(order=order)
+    order = OrderOperations.submit(order_id=order_id, payment_type=payment_type)
+    # await post_to_slack(order=order)
     order_data = {
         column.name: getattr(order, column.name)
         for column in order.__table__.columns

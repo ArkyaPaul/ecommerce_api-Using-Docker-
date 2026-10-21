@@ -26,10 +26,32 @@ class OrderStatus(str, Enum):
 
     IN_PROGRESS = "in_progress"
     SUBMITTED = "submitted"
+    CANCELLED = "cancelled"
     PENDING = "pending"
     COMPLETED = "completed"
     REFUNDED = "refunded"
 
+class PaymentType(str, Enum):
+    """
+    Enums for payment type
+    """
+    
+    COD = "cod"
+    UPI = "upi"
+    CARD = "card"
+    NET_BANKING = "net_banking"
+    TBD = "tbd"
+
+class PaymentStatus(str, Enum):
+    """
+    Enums for payment status
+    """
+
+    NOT_INITIATED = "not_initiated"    
+    PENDING = "pending"
+    SUCCESS = "success"
+    REFUNDED = "refunded"
+    NONE = "none"
 
 class ErrorTypes(str, Enum):
     """
