@@ -119,7 +119,7 @@ async def submit_order(
     """
     order_id = OrderOperations.get_order_id_from_email(email=data.email)
     order = OrderOperations.submit(order_id=order_id, payment_type=payment_type)
-    # await post_to_slack(order=order)
+    await post_to_slack(order=order)
     order_data = {
         column.name: getattr(order, column.name)
         for column in order.__table__.columns
